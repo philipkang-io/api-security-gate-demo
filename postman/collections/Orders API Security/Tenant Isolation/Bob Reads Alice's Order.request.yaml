@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/orders/{{aliceOrderA}}"
+method: GET
+headers:
+  Authorization: "Bearer {{bobToken}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Tenant B cannot read a tenant A order (403 or 404)', function () {
+          pm.expect(pm.response.code).to.be.oneOf([403, 404]);
+      });
+      pm.test('Response does not leak the order', function () {
+          pm.expect(pm.response.text()).to.not.include('Security Test A');
+      });
+    language: text/javascript
+order: 1000

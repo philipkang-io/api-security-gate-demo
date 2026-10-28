@@ -1,0 +1,8 @@
+$kind: collection
+name: Orders API Security
+variables:
+  aliceToken: ""
+  bobToken: ""
+  aliceOrderA: ""
+  aliceOrderB: ""
+  bobOrder: ""

@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/orders/{{aliceOrderA}}"
+method: PUT
+headers:
+  Authorization: "Bearer {{aliceToken}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "tenantId": "tenant-b",
+      "status": "shipped"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Server rejects or ignores a client-supplied tenantId', function () {
+          if (pm.response.code >= 400) {
+              pm.expect(pm.response.code).to.be.oneOf([400, 403, 422]);
+          } else {
+              pm.expect(pm.response.json().order.tenantId).to.eql('tenant-a');
+          }
+      });
+    language: text/javascript
+order: 1000

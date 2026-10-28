@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/orders"
+method: POST
+headers:
+  Authorization: "Bearer {{aliceToken}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "customer": "Security Test A",
+      "items": [{ "sku": "KB-01", "qty": 1 }],
+      "total": 80
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status code is 201', function () {
+          pm.response.to.have.status(201);
+      });
+      pm.test('Save order ID', function () {
+          pm.collectionVariables.set('aliceOrderA', pm.response.json().order.id);
+      });
+    language: text/javascript
+order: 3000

@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/orders"
+method: GET
+headers:
+  Authorization: "Bearer {{aliceToken}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Alice still sees order A in her own list', function () {
+          const ids = pm.response.json().orders.map(function (o) { return o.id; });
+          pm.expect(ids).to.include(pm.collectionVariables.get('aliceOrderA'));
+      });
+    language: text/javascript
+order: 2000

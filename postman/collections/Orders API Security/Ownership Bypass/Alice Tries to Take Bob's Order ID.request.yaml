@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/orders/{{aliceOrderB}}"
+method: PUT
+headers:
+  Authorization: "Bearer {{aliceToken}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "id": "{{bobOrder}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Server rejects or ignores a client-supplied order id', function () {
+          if (pm.response.code >= 400) {
+              pm.expect(pm.response.code).to.be.oneOf([400, 403, 422]);
+          } else {
+              pm.expect(pm.response.json().order.id).to.eql(pm.collectionVariables.get('aliceOrderB'));
+          }
+      });
+    language: text/javascript
+order: 1000
