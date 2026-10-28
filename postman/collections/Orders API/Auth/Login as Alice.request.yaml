@@ -1,0 +1,28 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{aliceEmail}}",
+      "password": "{{alicePassword}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status code is 200', function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test('Response has a token and expiry', function () {
+          const json = pm.response.json();
+          pm.expect(json.token).to.be.a('string');
+          pm.expect(json.expiresIn).to.eql(3600);
+      });
+      pm.test('Save token for later', function () {
+          pm.collectionVariables.set('aliceToken', pm.response.json().token);
+      });
+    language: text/javascript
+order: 1000

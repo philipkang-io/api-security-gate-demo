@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/orders"
+method: GET
+headers:
+  Authorization: "Bearer {{aliceToken}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status code is 200', function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test('Returns only the caller tenant orders', function () {
+          const json = pm.response.json();
+          pm.expect(json.orders).to.be.an('array');
+          pm.expect(json.orders.length).to.be.at.least(1);
+          json.orders.forEach(function (o) {
+              pm.expect(o.tenantId).to.eql('tenant-a');
+          });
+      });
+    language: text/javascript
+order: 1000

@@ -1,0 +1,31 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/orders"
+method: POST
+headers:
+  Authorization: "Bearer {{aliceToken}}"
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "customer": "Contract Test Co",
+      "items": [{ "sku": "KB-01", "qty": 1 }],
+      "total": 80
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status code is 201', function () {
+          pm.response.to.have.status(201);
+      });
+      pm.test('Order is created for the caller tenant', function () {
+          const json = pm.response.json();
+          pm.expect(json.order.customer).to.eql('Contract Test Co');
+          pm.expect(json.order.tenantId).to.eql('tenant-a');
+          pm.expect(json.order.id).to.be.a('string');
+      });
+      pm.test('Save order ID for later', function () {
+          pm.collectionVariables.set('orderId', pm.response.json().order.id);
+      });
+    language: text/javascript
+order: 2000

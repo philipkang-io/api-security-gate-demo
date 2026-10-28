@@ -1,0 +1,24 @@
+{
+  "name": "Local",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "aliceEmail",
+      "value": "alice@acme-corp.test",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "alicePassword",
+      "value": "alice-demo-pw",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "id": "ba864952-e6aa-4363-9cb3-512124d2abae"
+}
