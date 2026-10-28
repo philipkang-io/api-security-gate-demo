@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
 
 router.get('/:id', (req, res) => {
   const order = db.getOrder(req.params.id);
-  if (!order) return notFound(res);
+  if (!order || order.tenantId !== req.user.tenantId) return notFound(res);
   res.json({ order });
 });
 
