@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ state: 'ok', timestamp: new Date().toISOString() });
 });
 
 app.use('/auth', authRoutes);
