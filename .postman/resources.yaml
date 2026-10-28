@@ -1,2 +1,13 @@
+cloudResources:
+  collections:
+    ../postman/collections/Orders API: 52509354-e3149942-8102-44f1-abef-cf7642f99a70
+    ../postman/collections/Orders API Security: 52509354-95c498fa-5053-4ac4-b0d0-a4def7999fd5
+  globals:
+    ../postman/globals/workspace.globals.yaml: 0af6a32e-0458-4ea3-8aa6-8884017d1c51
+  specs:
+    ../postman/specs/orders-api.yaml: 502d150a-d7c2-4ceb-ac8c-c4cb54473b5f
+resourceNameMappings:
+  specs:
+    - ../postman/specs/orders-api.yaml: orders-api.yaml
 workspace:
   id: 111f93a1-b7d7-42ae-abf8-278e6376feae
