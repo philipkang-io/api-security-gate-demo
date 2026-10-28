@@ -8,8 +8,6 @@ const WINDOW_MS = 60 * 1000;
 const MAX_ATTEMPTS = 5;
 
 function clientIp(req) {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (forwarded) return forwarded.split(',')[0].trim();
   return req.socket.remoteAddress;
 }
 

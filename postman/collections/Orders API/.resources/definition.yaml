@@ -1,5 +1,4 @@
 $kind: collection
-name: Orders API
 variables:
   aliceToken: ""
   orderId: ""
