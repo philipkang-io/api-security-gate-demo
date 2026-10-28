@@ -1,0 +1,98 @@
+name: API Contract Gate
+
+# Runs on EVERY push to ANY branch. The resulting check is attached to the commit,
+# so a pull request whose head is that commit inherits it, which satisfies the
+# required status check on main. No separate `pull_request` trigger, so each push
+# produces exactly one run.
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  COLLECTION: ./postman/collections/Orders API
+  SPEC: ./postman/specs/orders-api.yaml
+  ENVIRONMENT: ./postman/environments/local.json
+
+jobs:
+  validate:
+    name: Validate API Spec & Contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Postman CLI
+        run: curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+
+      - name: Login to Postman
+        run: postman login --with-api-key "${{ secrets.POSTMAN_API_KEY }}"
+
+      # Design-time gate: governance rules from the Postman workspace.
+      - name: Lint API spec
+        run: |
+          postman spec lint "$SPEC" \
+            --workspace-id "${{ vars.POSTMAN_WORKSPACE_ID }}" \
+            --fail-severity ERROR
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start API
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          npm start &
+          for i in $(seq 1 20); do
+            if nc -z localhost 3000; then echo "API is up"; break; fi
+            echo "waiting for API..."
+            sleep 2
+          done
+          nc -z localhost 3000 || { echo "::error::API failed to start"; exit 1; }
+
+      # Runtime gate: contract tests against the live service.
+      - name: Run contract tests
+        run: |
+          set -o pipefail
+          postman collection run "$COLLECTION" -e "$ENVIRONMENT" | tee "$RUNNER_TEMP/run.log"
+
+      # A collection run that executes nothing still exits 0. Without this step a
+      # broken or unparseable collection reports a green gate having tested nothing.
+      - name: Gate - verify tests actually executed
+        if: always()
+        run: |
+          if [ ! -f "$RUNNER_TEMP/run.log" ]; then
+            echo "::error::No run log produced. The collection never ran."
+            exit 1
+          fi
+          EXPECTED=$(find "$COLLECTION" -name '*.request.yaml' | wc -l | tr -d ' ')
+          REQUESTS=$(awk -F'|' '/^\|[[:space:]]*requests/  {gsub(/ /,"",$3); print $3}' "$RUNNER_TEMP/run.log")
+          ASSERTIONS=$(awk -F'|' '/^\|[[:space:]]*assertions/{gsub(/ /,"",$3); print $3}' "$RUNNER_TEMP/run.log")
+          REQUESTS=${REQUESTS:-0}; ASSERTIONS=${ASSERTIONS:-0}
+          echo "requests on disk: $EXPECTED | executed: $REQUESTS | assertions: $ASSERTIONS"
+
+          if [ "$REQUESTS" -eq 0 ]; then
+            echo "::error::Collection executed 0 requests. Green here would be meaningless."
+            exit 1
+          fi
+          if [ "$REQUESTS" -ne "$EXPECTED" ]; then
+            echo "::error::Executed $REQUESTS of $EXPECTED requests. Some were silently skipped."
+            exit 1
+          fi
+          if [ "$ASSERTIONS" -eq 0 ]; then
+            echo "::error::0 assertions ran. The requests fired but nothing was verified."
+            exit 1
+          fi
+          echo "Gate satisfied: $REQUESTS/$EXPECTED requests, $ASSERTIONS assertions."
+
+      - name: Stop API
+        if: always()
+        run: pkill -f "node src/server.js" || true
