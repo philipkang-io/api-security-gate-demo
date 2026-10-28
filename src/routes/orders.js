@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
 
 router.get('/:id', (req, res) => {
   const order = db.getOrder(req.params.id);
-  if (!order) return notFound(res);
+  if (!order || order.tenantId !== req.user.tenantId) return notFound(res);
   res.json({ order });
 });
 
@@ -26,10 +26,14 @@ router.post('/', (req, res) => {
   res.status(201).json({ order });
 });
 
+const EDITABLE_FIELDS = ['customer', 'items', 'total', 'status'];
+
 router.put('/:id', (req, res) => {
   const order = db.getOrder(req.params.id);
-  if (!order) return notFound(res);
-  Object.assign(order, req.body);
+  if (!order || order.tenantId !== req.user.tenantId) return notFound(res);
+  for (const field of EDITABLE_FIELDS) {
+    if (req.body && req.body[field] !== undefined) order[field] = req.body[field];
+  }
   res.json({ order });
 });
 
