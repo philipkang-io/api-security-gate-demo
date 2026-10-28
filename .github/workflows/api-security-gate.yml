@@ -16,7 +16,7 @@ env:
   COLLECTION: ./postman/collections/Orders API
   SECURITY_COLLECTION: ./postman/collections/Orders API Security
   SPEC: ./postman/specs/orders-api.yaml
-  ENVIRONMENT: ./postman/environments/local.json
+  ENVIRONMENT: ./postman/environments/Local.environment.json
 
 jobs:
   validate:
