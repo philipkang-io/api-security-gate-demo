@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/orders/{{bobOrder}}"
+method: GET
+headers:
+  Authorization: "Bearer {{bobToken}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Bob's order still exists after Alice's delete", function () {
+          pm.response.to.have.status(200);
+          pm.expect(pm.response.json().order.id).to.eql(pm.collectionVariables.get('bobOrder'));
+      });
+    language: text/javascript
+order: 3000

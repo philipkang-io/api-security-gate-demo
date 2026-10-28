@@ -18,6 +18,18 @@
       "value": "alice-demo-pw",
       "type": "default",
       "enabled": true
+    },
+    {
+      "key": "bobEmail",
+      "value": "bob@globex-inc.test",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "bobPassword",
+      "value": "bob-demo-pw",
+      "type": "default",
+      "enabled": true
     }
   ],
   "id": "ba864952-e6aa-4363-9cb3-512124d2abae"
